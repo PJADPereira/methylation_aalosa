@@ -292,7 +292,7 @@ nohup  ./Bismark-0.22.3/bismark_methylation_extractor \
 	./methyl_analysis/maps/paired/T98_95_merged_1_val_1_bismark_bt2_pe.bam \
 	./methyl_analysis/maps/paired/T98_98_merged_1_val_1_bismark_bt2_pe.bam \
 	./methyl_analysis/maps/paired/T98_99_merged_1_val_1_bismark_bt2_pe.bam \
-	./methyl_analysis/maps/paired/T99_353__merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T99_353_merged_1_val_1_bismark_bt2_pe.bam \
 	./methyl_analysis/maps/paired/T99_354_merged_1_val_1_bismark_bt2_pe.bam \
 	./methyl_analysis/maps/paired/T99_370_merged_1_val_1_bismark_bt2_pe.bam \
 	./methyl_analysis/maps/paired/T99_373_merged_1_val_1_bismark_bt2_pe.bam \
@@ -350,7 +350,7 @@ nohup  ./Bismark-0.22.3/bismark_methylation_extractor \
 	./methyl_analysis/maps/unmapped_singles/T98_95_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
 	./methyl_analysis/maps/unmapped_singles/T98_98_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
 	./methyl_analysis/maps/unmapped_singles/T98_99_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
-	./methyl_analysis/maps/unmapped_singles/T99_353__merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_353_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
 	./methyl_analysis/maps/unmapped_singles/T99_354_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
 	./methyl_analysis/maps/unmapped_singles/T99_370_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
 	./methyl_analysis/maps/unmapped_singles/T99_373_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
