@@ -1,1 +1,419 @@
+##### PRE-TRIMMING-QC #####
+
+nohup fastqc -t 30 -o ./methyl_analysis/fastqc_pre_trim/ ./methyl_analysis/rawdata/*/*.fq.gz &
+
+
+
+##### READ TRIMMING ######
+
+nohup parallel --xapply  /TrimGalore-0.6.5/trim_galore \
+  --path_to_cutadapt /bin/cutadapt \
+  --paired --phred33 \
+  --output_dir ./methyl_analysis/trimmed \
+  --length 36 -q 20 --stringency 1 -e 0.1 \
+  --rrbs --keep \
+  ::: ./methyl_analysis/rawdata/*/*_1.fq.gz ::: ./methyl_analysis/rawdata/*/*_2.fq.gz  &
+
+
+
+##### POS-TRIMMING-QC #####
+
+nohup fastqc -t 30 -o ./methyl_analysis/fastqc_pos_trim/ ./methyl_analysis/trimmed/*_val_*.fq.gz &
+
+
+
+##### BUILD GENOME INDEX #####
+
+nohup ./Bismark-0.22.3/bismark_genome_preparation -genomic_composition ./methyl_analysis/ref &
+
+
+
+##### MAP READS IN PAIRED-END MODE ######
+## For some reason, wild-card name expansions doesn't work properly, so it is best to list the path to individual files
+
+nohup ./Bismark-0.22.3/bismark --genome ./methyl_analysis/ref --unmapped --ambiguous \
+  --samtools_path /bin/samtools-1.9/samtools --parallel 16 --local --non_directional \
+  -o ./methyl_analysis/maps \
+  -1 \
+	./methyl_analysis/trimmed/AT98_351_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_57_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_71_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_114_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_99_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/AT98_352_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_58_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_72_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_154_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T99_353_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_33_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_59_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_74_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_164_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T99_354_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_35_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_60_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_75_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_167_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T99_370_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_49_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_61_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_77_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_171_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T99_373_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_50_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_62_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_78_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_216_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/TFT_99_22_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_52_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_63_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATF_99_09_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_54_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/TFT_99_23_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_53_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_65_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_101_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_93_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/TFT_99_54_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_55_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_67_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_109_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_95_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_56_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_70_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_110_merged_1_val_1.fq.gz,\
+	./methyl_analysis/trimmed/T98_98_merged_1_val_1.fq.gz \
+	-2 \
+	./methyl_analysis/trimmed/AT98_351_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_57_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_71_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_114_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_99_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/AT98_352_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_58_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_72_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_154_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T99_353_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_33_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_59_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_74_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_164_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T99_354_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_35_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_60_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_75_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_167_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T99_370_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_49_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_61_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_77_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_171_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T99_373_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_50_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_62_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_78_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_216_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/TFT_99_22_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_52_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_63_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATF_99_09_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_54_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/TFT_99_23_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_53_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_65_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_101_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_93_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/TFT_99_54_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_55_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_67_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_109_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_95_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_56_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/ATCB_99_70_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_110_merged_2_val_2.fq.gz,\
+	./methyl_analysis/trimmed/T98_98_merged_2_val_2.fq.gz &
+
+
+
+##### MAP UNMAPPED READS HAS SINGLES #####
+## At an initial phase, both read1 and read2 can be treated the same, but only read1 should be merged to the final methylation scores when creating the bedGraphs
+
+
+nohup 	./Bismark-0.22.3/bismark --genome 	./methyl_analysis/ref \
+  --samtools_path /bin/samtools-1.9/samtools --parallel 10 --local --non_directional \
+  -o 	./methyl_analysis/maps/unmapped_singles/ \
+  --se \
+	./methyl_analysis/unmapped/AT98_351_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/AT98_351_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/AT98_352_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/AT98_352_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_33_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_33_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_35_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_35_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_49_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_49_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_50_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_50_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_52_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_52_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_53_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_53_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_55_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_55_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_56_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_56_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_57_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_57_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_58_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_58_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_59_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_59_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_60_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_60_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_61_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_61_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_62_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_62_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_63_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_63_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_65_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_65_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_67_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_67_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_70_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_70_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_71_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_71_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_72_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_72_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_74_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_74_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_75_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_75_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_77_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_77_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_78_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATCB_99_78_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/ATF_99_09_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/ATF_99_09_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_101_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_101_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_109_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_109_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_110_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_110_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_114_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_114_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_154_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_154_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_164_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_164_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_167_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_167_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_171_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_171_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_216_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_216_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_54_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_54_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_93_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_93_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_95_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_95_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_98_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_98_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T98_99_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T98_99_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T99_353_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T99_353_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T99_354_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T99_354_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T99_370_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T99_370_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/T99_373_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/T99_373_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/TFT_99_22_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/TFT_99_22_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/TFT_99_23_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/TFT_99_23_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz,\
+	./methyl_analysis/unmapped/TFT_99_54_merged_1_val_1.fq.gz_unmapped_reads_1.fq.gz,\
+	./methyl_analysis/unmapped/TFT_99_54_merged_2_val_2.fq.gz_unmapped_reads_2.fq.gz &
+
+
+
+##### RUN METHYLATION EXTRACTOR ON PAIRED_READS #####
+
+
+nohup  ./Bismark-0.22.3/bismark_methylation_extractor \
+	--parallel 30 --scaffolds \
+	--comprehensive --gzip --bedGraph --cytosine_report --genome_folder ./methyl_analysis/ref \
+	--samtools_path ./bin/samtools-1.9/samtools \
+	-o ./methyl_analysis/methyl_extracted \
+	-p \
+	./methyl_analysis/maps/paired/AT98_351_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/AT98_352_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_33_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_35_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_49_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_50_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_52_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_53_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_55_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_56_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_57_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_58_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_59_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_60_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_61_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_62_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_63_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_65_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_67_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_70_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_71_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_72_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_74_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_75_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_77_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATCB_99_78_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/ATF_99_09_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_101_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_109_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_110_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_114_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_154_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_164_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_167_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_171_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_216_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_54_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_93_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_95_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_98_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T98_99_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T99_353__merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T99_354_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T99_370_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/T99_373_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/TFT_99_22_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/TFT_99_23_merged_1_val_1_bismark_bt2_pe.bam \
+	./methyl_analysis/maps/paired/TFT_99_54_merged_1_val_1_bismark_bt2_pe.bam > pairedmethyl_extracted.out &
+
+
+##### RUN METHYLATION EXTRACTOR ON SINGLE-READS ##### 
+
+nohup  ./Bismark-0.22.3/bismark_methylation_extractor \
+  --parallel 30 --scaffolds \
+  --comprehensive --gzip --bedGraph --cytosine_report --genome_folder ./methyl_analysis/ref \
+  --samtools_path ./bin/samtools-1.9/samtools \
+  -o ./methyl_analysis/methyl_extracted_unpaired \
+  -s \
+	./methyl_analysis/maps/unmapped_singles/AT98_351_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/AT98_352_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_33_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_35_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_49_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_50_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_52_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_53_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_55_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_56_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_57_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_58_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_59_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_60_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_61_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_62_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_63_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_65_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_67_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_70_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_71_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_72_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_74_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_75_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_77_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_78_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATF_99_09_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_101_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_109_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_110_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_114_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_154_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_164_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_167_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_171_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_216_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_54_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_93_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_95_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_98_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_99_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_353__merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_354_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_370_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_373_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/TFT_99_22_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/TFT_99_23_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/TFT_99_54_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/AT98_351_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/AT98_352_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_33_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_35_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_49_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_50_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_52_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_53_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_55_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_56_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_57_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_58_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_59_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_60_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_61_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_62_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_63_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_65_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_67_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_70_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_71_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_72_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_74_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_75_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_77_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATCB_99_78_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/ATF_99_09_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_101_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_109_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_110_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_114_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_154_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_164_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_167_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_171_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_216_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_54_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_93_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_95_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_98_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T98_99_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_353_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_354_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_370_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/T99_373_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/TFT_99_22_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/TFT_99_23_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam \
+	./methyl_analysis/maps/unmapped_singles/TFT_99_54_merged_2_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam > unmappedmethyl_extracted.out &
+
+
+##### CREATE BEDGRAPH FILES FOR EACH SAMPLE USING THE FOLLOWING FORMULA #####
+
+nohup ./Bismark-0.22.3/bismark2bedGraph --scaffolds \
+  -o ATCB_99_33_local_bed \
+  --dir ./methyl_analysis/bedGraphs/CBD/individuals/ \
+  /home/canary/paulo/methyl_analysis/methyl_extracted/CpG_context_ATCB_99_33_merged_1_val_1_bismark_bt2_pe.txt.gz \
+  /home/canary/paulo/methyl_analysis/methyl_extracted_unpaired/CpG_context_ATCB_99_33_merged_1_val_1.fq.gz_unmapped_reads_1_bismark_bt2.txt.gz > ATCB_99_33_bedgraph_out &
+
+
 
