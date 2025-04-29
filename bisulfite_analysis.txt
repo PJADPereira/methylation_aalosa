@@ -408,6 +408,7 @@ nohup  ./Bismark-0.22.3/bismark_methylation_extractor \
 
 
 ##### CREATE BEDGRAPH FILES FOR EACH SAMPLE USING THE FOLLOWING FORMULA #####
+### At this point it is important to not run this formula to the samples that failed our coverage filter!
 
 nohup ./Bismark-0.22.3/bismark2bedGraph --scaffolds \
   -o ATCB_99_33_local_bed \
