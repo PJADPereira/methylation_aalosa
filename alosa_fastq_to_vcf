@@ -1,0 +1,116 @@
+
+#bwa Version: 0.7.17-r1188
+#fastqc FastQC v0.11.8
+#picard: Version: 2.20.3-SNAPSHOT
+#samtools: Version: 0.1.20
+#freebayes: version:  v1.3.1-dirty
+
+
+for SAMPLE in $SAMPLE_LIST; do
+
+
+java -jar $TRIMMOMATIC/trimmomatic-0.39.jar \
+PE \
+-threads $THREADS \
+$SAMPLE_PATH/${SAMPLE}_R1.fastq.gz \
+$SAMPLE_PATH/${SAMPLE}_R2.fastq.gz \
+$SAMPLE_TRIM_PAIRED/${SAMPLE}_R1_paired.fastq.gz \
+$SAMPLE_TRIM_UNPAIRED/${SAMPLE}_R1_unpaired.fastq.gz \
+$SAMPLE_TRIM_PAIRED/${SAMPLE}_R2_paired.fastq.gz \
+$SAMPLE_TRIM_UNPAIRED/${SAMPLE}_R2_unpaired.fastq.gz \
+ILLUMINACLIP:$TRIMMOMATIC/adapters/TruSeq3-PE.fa:2:20:10:1:true \
+TRAILING:15 \
+SLIDINGWINDOW:4:20 \
+MINLEN:30 \
+TOPHRED33 \
+2>&1 | tee -a $TRIMREADS_COUNT_LOG
+echo -e "Finished - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+
+
+for SAMPLE in $SAMPLE_LIST; do
+
+    echo -e "Running FastQC on trimmed reads for $SAMPLE... - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+    time \
+    $NICE_VALUE \
+    $FASTQC/fastqc \
+    -o $RUN/fastqc/fastq_trimmed \
+    -t $THREADS \
+    $SAMPLE_TRIM_PAIRED/${SAMPLE}*.fastq.gz
+    echo -e "Finished - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+
+
+
+
+for SAMPLE in $SAMPLE_LIST; do
+
+    echo -e "Running - BWA MEM for $SAMPLE... - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+    time \
+    $NICE_VALUE \
+    bwa \
+    mem \
+    -t $THREADS \
+    -M \
+    $REFERENCE \
+    $SAMPLE_TRIM_PAIRED/${SAMPLE}_R1_paired.fastq.gz \
+    $SAMPLE_TRIM_PAIRED/${SAMPLE}_R2_paired.fastq.gz \
+    > $RUN/alignment/sam/${SAMPLE}_paired.sam
+    echo -e "Finished - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+
+
+
+for SAMPLE in $SAMPLE_LIST; do
+
+    echo -e "Running - Adding read group information for $SAMPLE... - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+    time \
+    $NICE_VALUE \
+    java -Xmx2g \
+    -jar $PICARD/picard.jar \
+    AddOrReplaceReadGroups \
+    INPUT=$RUN/alignment/bam/$STARTING_FILES_DIRECTORY/files/${SAMPLE}${STARTING_FILES_EXTENSION}.bam\
+    OUTPUT=$RUN/alignment/bam/readgroup/files/${SAMPLE}_RG.bam \
+    RGID=$SAMPLE \
+    RGLB=$SAMPLE \
+    RGSM=$SAMPLE \
+    RGPU=not_defined \
+    RGPL=ILLUMINA \
+    VALIDATION_STRINGENCY=LENIENT
+    echo -e "Finished - `$DATE_STAMP`\n" | tee -a $MAIN_LOG $DB_MAIN_LOG
+
+
+
+for SAMPLE in $SAMPLE_LIST; do
+
+    echo -e "Running - Removing of duplicates in $SAMPLE... - `$DATE_STAMP`" | tee -a $MAIN_LOG $DB_MAIN_LOG
+    time \
+    $NICE_VALUE \
+    java -Xmx2g \
+    -jar $PICARD/picard.jar \
+    MarkDuplicates \
+    INPUT= $RUN/alignment/bam/readgroup/files/${SAMPLE}_RG.bam \
+    OUTPUT=$RUN/alignment/bam/duplicates/files/${SAMPLE}_dup.bam \
+    METRICS_FILE=$RUN/alignment/bam/duplicates/log/${SAMPLE}.duplicates.log \
+    REMOVE_DUPLICATES=true \
+    VALIDATION_STRINGENCY=STRICT \
+    ASSUME_SORTED=true \
+    MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=1000
+    echo -e "Finished - `$DATE_STAMP`\n" | tee -a $MAIN_LOG $DB_MAIN_LOG
+
+
+
+
+for i in {1..127}
+do
+./freeBayes/freebayes \
+-f GCF_017589495.1_AALO_Geno_1.1_genomic.fna \
+-t ./alosa/genomes/targs/targ_$i \
+-p 22 --use-best-n-alleles 4 --pooled-discrete --min-coverage 10 \
+--min-repeat-entropy 1 --min-mapping-quality 40 \
+--min-base-quality 20 --use-mapping-quality --skip-coverage 500 \
+--bam MON_AA_SAB3_paired_sorted_RG_ND.bam \
+--bam GAR_AA_AD5_paired_sorted_RG_ND.bam \
+--bam BAG_AA_SAB1_paired_sorted_RG_ND.bam \
+--bam CBD_AA_SAB2_paired_sorted_RG_ND.bam \
+--bam ALQ_AA_AD2_paired_sorted_RG_ND.bam > alosa500_$i.vcf &
+done
+
+
